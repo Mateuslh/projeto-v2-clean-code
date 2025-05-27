@@ -1,59 +1,73 @@
-import os
+import os, csv
+from config.Caminhos import PASTA_BANCO_DADOS
 from model.reserva.Reserva import Reserva
 from model.reserva.ReservaBuilder import ReservaBuilder
+from model.reserva.StatusReserva import StatusReserva
+from model.reserva.TipoQuarto import TipoQuarto
+
+_ARQUIVO = os.path.join(PASTA_BANCO_DADOS, "Reservas.txt")
+_CABECALHO = [
+    "identificador", "status", "titular_id",
+    "quantidade_pessoas", "numero_diarias",
+    "tipo_quarto", "valor"
+]
 
 
 class ReservaRepository:
-    FILE_PATH = 'Reservas.txt'
-    SEPARATOR = ','
-    EXPECTED_FIELDS = 8
-    DEFAULT_ID = 0
-    NEW_LINE = '\n'
-
     @classmethod
-    def save_or_update(cls, reserva: Reserva):
+    def salvar_ou_atualizar(cls, reserva: Reserva):
         reservas = cls.listar_todas()
 
-        for i, r in enumerate(reservas):
-            if r.id == reserva.id:
+        for i, existente in enumerate(reservas):
+            if existente.identificador == reserva.identificador:
                 reservas[i] = reserva
                 break
         else:
-            reserva = ReservaBuilder(reserva).id(cls._next_id(reservas)).skip_validate_().build()
+            reserva._identificador = cls._proximo_id(reservas)
             reservas.append(reserva)
 
-        with open(cls.FILE_PATH, 'w', encoding='utf-8') as file:
-            file.writelines(cls._format(r) + cls.NEW_LINE for r in reservas)
+        cls._escrever_todas(reservas)
 
     @classmethod
     def listar_todas(cls) -> list[Reserva]:
-        if not os.path.exists(cls.FILE_PATH):
+        if not os.path.exists(_ARQUIVO):
             return []
-        with open(cls.FILE_PATH, 'r', encoding='utf-8') as file:
-            return [cls._parse(line) for line in file if cls._valid_line(line)]
+        with open(_ARQUIVO, newline="") as file:
+            leitor = csv.DictReader(file, fieldnames=_CABECALHO)
+            return [cls._linha_para_reserva(l) for l in leitor]
 
     @staticmethod
-    def _next_id(reservas: list[Reserva]) -> int:
-        return max((r.id for r in reservas), default=ReservaRepository.DEFAULT_ID) + 1
+    def _proximo_id(reservas: list[Reserva]) -> int:
+        return max((r.identificador for r in reservas), default=0) + 1
 
-    @classmethod
-    def _valid_line(cls, line: str) -> bool:
-        return len(line.strip().split(cls.SEPARATOR)) == cls.EXPECTED_FIELDS
-
-    @classmethod
-    def _parse(cls, line: str) -> Reserva:
-        dados = line.strip().split(cls.SEPARATOR)
-        return ReservaBuilder() \
-            .id(int(dados[0])) \
-            .statusReserva(dados[1]) \
-            .idTitular(dados[2]) \
-            .qntPessoas(int(dados[4])) \
-            .diarias(int(dados[5])) \
-            .tipoQuarto(dados[6]) \
-            .valorReserva(float(dados[7])) \
-            .skip_validate_() \
+    @staticmethod
+    def _linha_para_reserva(dados: dict) -> Reserva:
+        return (
+            ReservaBuilder()
+            .identificador(int(dados["identificador"]))
+            .status(StatusReserva(dados["status"]))
+            .titular_identificador(int(dados["titular_id"]))
+            .quantidade_pessoas(int(dados["quantidade_pessoas"]))
+            .numero_diarias(int(dados["numero_diarias"]))
+            .tipo_quarto(TipoQuarto(dados["tipo_quarto"]))
+            .calcular_valor()
+            .skip_validate_()
             .build()
+        )
 
-    @staticmethod
-    def _format(reserva: Reserva) -> str:
-        return f"{reserva.id},{reserva.statusReserva},{reserva.idTitular},{reserva.idTitular},{reserva.qntPessoas},{reserva.diarias},{reserva.tipoQuarto},{reserva.valorReserva:.2f}"
+    @classmethod
+    def _escrever_todas(cls, reservas: list[Reserva]):
+        with open(_ARQUIVO, "w", newline="") as file:
+            escritor = csv.writer(file)
+            for r in reservas:
+                escritor.writerow(
+                    [
+                        r.identificador,
+                        r.status_reserva.value,
+                        r.titular_identificador,
+                        r.quantidade_pessoas,
+                        r.numero_diarias,
+                        r.tipo_quarto.value,
+                        f"{r.valor_reserva:.2f}",
+                    ]
+                )

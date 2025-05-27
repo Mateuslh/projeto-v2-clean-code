@@ -1,63 +1,68 @@
 import os
+from config.Caminhos import PASTA_BANCO_DADOS
 from model.pessoa.Pessoa import Pessoa
 from model.pessoa.PessoaBuilder import PessoaBuilder
 
+_ARQUIVO = os.path.join(PASTA_BANCO_DADOS, "Pessoas.txt")
+_SEPARADOR = ","
+_CAMPOS_ESPERADOS = 3
+_NOVA_LINHA = "\n"
+
 
 class PessoaRepository:
-    FILE_PATH = 'Pessoas.txt'
-    SEPARATOR = ','
-    EXPECTED_FIELDS = 3
-    DEFAULT_ID = 0
-    NEW_LINE = '\n'
-
     @classmethod
-    def save_or_update(cls, pessoa: Pessoa):
+    def salvar_ou_atualizar(cls, pessoa: Pessoa):
         pessoas = cls.listar_todas()
 
-        for i, p in enumerate(pessoas):
-            if p.id == pessoa.id:
+        for i, existente in enumerate(pessoas):
+            if existente.identificador == pessoa.identificador:
                 pessoas[i] = pessoa
                 break
         else:
-            pessoa = PessoaBuilder(pessoa).id(cls._next_id(pessoas)).skip_validate_().build()
+            pessoa = (
+                PessoaBuilder(pessoa)
+                .identificador(cls._proximo_id(pessoas))
+                .build()
+            )
             pessoas.append(pessoa)
 
-        with open(cls.FILE_PATH, 'w', encoding='utf-8') as file:
-            file.writelines(cls._format(p) + cls.NEW_LINE for p in pessoas)
+        with open(_ARQUIVO, "w", encoding="utf-8") as arquivo:
+            arquivo.writelines(cls._formatar(p) + _NOVA_LINHA for p in pessoas)
 
     @classmethod
-    def buscar_por_id(cls, id_pessoa: int) -> Pessoa:
-        pessoas = cls.listar_todas()
-        for pessoa in pessoas:
-            if pessoa.id == id_pessoa:
-                return pessoa
-        raise ValueError(f"Pessoa com id {id_pessoa} não encontrada.")
+    def buscar_por_cpf(cls, cpf: str) -> Pessoa | None:
+        return next((p for p in cls.listar_todas() if p.cpf == cpf), None)
 
     @classmethod
     def listar_todas(cls) -> list[Pessoa]:
-        if not os.path.exists(cls.FILE_PATH):
+        if not os.path.exists(_ARQUIVO):
             return []
-        with open(cls.FILE_PATH, 'r', encoding='utf-8') as file:
-            return [cls._parse(line) for line in file if cls._valid_line(line)]
+        with open(_ARQUIVO, "r", encoding="utf-8") as arquivo:
+            return [
+                cls._parse(line) for line in arquivo
+                if cls._linha_valida(line)
+            ]
 
     @staticmethod
-    def _next_id(pessoas: list[Pessoa]) -> int:
-        return max((p.id for p in pessoas), default=PessoaRepository.DEFAULT_ID) + 1
+    def _proximo_id(pessoas: list[Pessoa]) -> int:
+        return max((p.identificador for p in pessoas), default=0) + 1
 
-    @classmethod
-    def _valid_line(cls, line: str) -> bool:
-        return len(line.strip().split(cls.SEPARATOR)) == cls.EXPECTED_FIELDS
+    @staticmethod
+    def _linha_valida(linha: str) -> bool:
+        return len(linha.strip().split(_SEPARADOR)) == _CAMPOS_ESPERADOS
 
-    @classmethod
-    def _parse(cls, line: str) -> Pessoa:
-        dados = line.strip().split(cls.SEPARATOR)
-        return PessoaBuilder() \
-            .id(int(dados[0])) \
-            .nome(dados[1]) \
-            .cpf(dados[2]) \
-            .skip_validate_() \
+    @staticmethod
+    def _parse(linha: str) -> Pessoa:
+        identificador, nome, cpf = linha.strip().split(_SEPARADOR)
+        return (
+            PessoaBuilder()
+            .identificador(int(identificador))
+            .nome(nome)
+            .cpf(cpf)
+            .skip_validate_()
             .build()
+        )
 
     @staticmethod
-    def _format(pessoa: Pessoa) -> str:
-        return f"{pessoa.id},{pessoa.nome},{pessoa.cpf}"
+    def _formatar(pessoa: Pessoa) -> str:
+        return f"{pessoa.identificador},{pessoa.nome},{pessoa.cpf}"
