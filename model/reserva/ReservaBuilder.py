@@ -1,45 +1,53 @@
+from __future__ import annotations
+
 from common.AbstractBuilder import AbstractBuilder
 from model.reserva.Reserva import Reserva
 from model.reserva.ReservaSpecification import ReservaSpecification
+from model.reserva.TipoQuarto import TipoQuarto
 
 
 class ReservaBuilder(AbstractBuilder):
-    def create_entity(self):
+    def __init__(self, reserva_original: "Reserva" | None = None):
+        super().__init__(reserva_original)
+
+    def _create_entity(self):
         return Reserva()
 
-    def id(self, id: int):
-        self.entity._id = id
+    def identificador(self, identificador: int):
+        self.entity._identificador = identificador
         return self
 
-    def idTitular(self, idTitular: int):
-        self.entity._idTitular = idTitular
+    def titular_identificador(self, titular_identificador: int):
+        self.entity._titular_identificador = titular_identificador
         return self
 
-    def statusReserva(self, status: str):
-        self.entity._statusReserva = status
+    def status(self, status):
+        self.entity._status_reserva = status
         return self
 
-    def qntPessoas(self, qnt: int):
-        self.entity._qntPessoas = qnt
+    def quantidade_pessoas(self, quantidade: int):
+        self.entity._quantidade_pessoas = quantidade
         return self
 
-    def diarias(self, diarias: int):
-        self.entity._diarias = diarias
+    def numero_diarias(self, diarias: int):
+        self.entity._numero_diarias = diarias
         return self
 
-    def tipoQuarto(self, tipo: str):
-        self.entity._tipoQuarto = tipo
+    def tipo_quarto(self, tipo: TipoQuarto):
+        self.entity._tipo_quarto = tipo
         return self
 
-    def valorReserva(self, valor: float):
-        self.entity._valorReserva = valor
+    def calcular_valor(self):
+        reserva = self.entity
+        reserva._valor_reserva = (
+                reserva.tipo_quarto.tarifa
+                * reserva.quantidade_pessoas
+                * reserva.numero_diarias
+        )
         return self
+
+    def tipo_quarto_e_valor(self, tipo: TipoQuarto):
+        return self.tipo_quarto(tipo).calcular_valor()
 
     def validate(self):
-        reserva = self.entity
-        ReservaSpecification.validar_id_titular(reserva)
-        ReservaSpecification.validar_status(reserva)
-        ReservaSpecification.validar_quantidade_pessoas(reserva)
-        ReservaSpecification.validar_diarias(reserva)
-        ReservaSpecification.validar_tipo_quarto(reserva)
-        ReservaSpecification.validar_valor_reserva(reserva)
+        ReservaSpecification.validar(self.entity)

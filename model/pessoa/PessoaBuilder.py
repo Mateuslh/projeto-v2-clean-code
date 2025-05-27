@@ -4,11 +4,11 @@ from model.pessoa.PessoaSpecification import PessoaSpecification
 
 
 class PessoaBuilder(AbstractBuilder):
-    def create_entity(self):
+    def _create_entity(self):
         return Pessoa()
 
-    def id(self, id: int):
-        self.entity._id = id
+    def identificador(self, identificador: int):
+        self.entity._identificador = identificador
         return self
 
     def nome(self, nome: str):
