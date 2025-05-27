@@ -7,6 +7,7 @@ _ARQUIVO = os.path.join(PASTA_BANCO_DADOS, "Pessoas.txt")
 _SEPARADOR = ","
 _CAMPOS_ESPERADOS = 3
 _NOVA_LINHA = "\n"
+_ENCODING = "utf-8"
 
 
 class PessoaRepository:
@@ -26,7 +27,7 @@ class PessoaRepository:
             )
             pessoas.append(pessoa)
 
-        with open(_ARQUIVO, "w", encoding="utf-8") as arquivo:
+        with open(_ARQUIVO, "w", encoding=_ENCODING) as arquivo:
             arquivo.writelines(cls._formatar(p) + _NOVA_LINHA for p in pessoas)
 
     @classmethod
@@ -37,7 +38,7 @@ class PessoaRepository:
     def listar_todas(cls) -> list[Pessoa]:
         if not os.path.exists(_ARQUIVO):
             return []
-        with open(_ARQUIVO, "r", encoding="utf-8") as arquivo:
+        with open(_ARQUIVO, "r", encoding=_ENCODING) as arquivo:
             return [
                 cls._parse(line) for line in arquivo
                 if cls._linha_valida(line)

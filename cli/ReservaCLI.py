@@ -1,8 +1,10 @@
 import time as t
+
+from cli.PessoaCLI import PessoaCLI
 from model.reserva.StatusReserva import StatusReserva
 from model.reserva.TipoQuarto import TipoQuarto
 from service.ReservaService import ReservaService
-from cli.PessoaCLI import PessoaCLI
+from service.RelatorioService import RelatorioService
 
 COL_WIDTHS = (6, 12, 22)
 
@@ -150,7 +152,6 @@ class ReservaCLI:
         print("6 - Reservas por titular\n")
 
         escolha = input("Opção: ").strip()
-        from service.RelatorioService import RelatorioService
 
         if escolha in {"1", "2", "3", "4"}:
             status = {

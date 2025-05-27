@@ -7,13 +7,16 @@ class Pessoa:
         self._cpf:            str | None = None
 
     @property
-    def identificador(self): return self._identificador
+    def identificador(self):
+        return self._identificador
 
     @property
-    def nome(self): return self._nome
+    def nome(self):
+        return self._nome
 
     @property
-    def cpf(self): return self._cpf
+    def cpf(self):
+        return self._cpf
 
     def __repr__(self):
         return (f"Pessoa(identificador={self.identificador}, "

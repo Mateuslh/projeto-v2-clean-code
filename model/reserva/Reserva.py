@@ -17,25 +17,32 @@ class Reserva:
 
 
     @property
-    def identificador(self): return self._identificador
+    def identificador(self):
+        return self._identificador
 
     @property
-    def titular_identificador(self): return self._titular_identificador
+    def titular_identificador(self):
+        return self._titular_identificador
 
     @property
-    def status_reserva(self): return self._status_reserva
+    def status_reserva(self):
+        return self._status_reserva
 
     @property
-    def quantidade_pessoas(self): return self._quantidade_pessoas
+    def quantidade_pessoas(self):
+        return self._quantidade_pessoas
 
     @property
-    def numero_diarias(self): return self._numero_diarias
+    def numero_diarias(self):
+        return self._numero_diarias
 
     @property
-    def tipo_quarto(self): return self._tipo_quarto
+    def tipo_quarto(self):
+        return self._tipo_quarto
 
     @property
-    def valor_reserva(self): return self._valor_reserva
+    def valor_reserva(self):
+        return self._valor_reserva
 
 
     def __repr__(self):

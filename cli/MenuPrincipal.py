@@ -1,3 +1,5 @@
+import sys
+
 from service.PessoaService import PessoaService
 from service.ReservaService import ReservaService
 from cli.PessoaCLI import PessoaCLI
@@ -46,7 +48,7 @@ class MenuPrincipal:
 
     @staticmethod
     def sair():
-        exit()
+        sys.exit()
 
 
 if __name__ == "__main__":

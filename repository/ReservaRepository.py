@@ -1,10 +1,13 @@
-import os, csv
+import csv
+import os
+
 from config.Caminhos import PASTA_BANCO_DADOS
 from model.reserva.Reserva import Reserva
 from model.reserva.ReservaBuilder import ReservaBuilder
 from model.reserva.StatusReserva import StatusReserva
 from model.reserva.TipoQuarto import TipoQuarto
 
+_ENCODING = "utf-8"
 _ARQUIVO = os.path.join(PASTA_BANCO_DADOS, "Reservas.txt")
 _CABECALHO = [
     "identificador", "status", "titular_id",
@@ -23,16 +26,19 @@ class ReservaRepository:
                 reservas[i] = reserva
                 break
         else:
-            reserva._identificador = cls._proximo_id(reservas)
-            reservas.append(reserva)
-
-        cls._escrever_todas(reservas)
+            nova_reserva = (
+                ReservaBuilder(reserva)
+                .identificador(cls._proximo_id(reservas))
+                .skip_validate_()
+                .build()
+            )
+            reservas.append(nova_reserva)
 
     @classmethod
     def listar_todas(cls) -> list[Reserva]:
         if not os.path.exists(_ARQUIVO):
             return []
-        with open(_ARQUIVO, newline="") as file:
+        with open(_ARQUIVO, newline="", encoding=_ENCODING) as file:
             leitor = csv.DictReader(file, fieldnames=_CABECALHO)
             return [cls._linha_para_reserva(l) for l in leitor]
 
@@ -57,7 +63,7 @@ class ReservaRepository:
 
     @classmethod
     def _escrever_todas(cls, reservas: list[Reserva]):
-        with open(_ARQUIVO, "w", newline="") as file:
+        with open(_ARQUIVO, "w", newline="", encoding=_ENCODING) as file:
             escritor = csv.writer(file)
             for r in reservas:
                 escritor.writerow(

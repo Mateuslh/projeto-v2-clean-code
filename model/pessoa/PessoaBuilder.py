@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 from common.AbstractBuilder import AbstractBuilder
 from model.pessoa.Pessoa import Pessoa
 from model.pessoa.PessoaSpecification import PessoaSpecification
