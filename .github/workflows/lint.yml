@@ -21,4 +21,5 @@ jobs:
 
       - name: Run pylint
         run: |
-          pylint src/ --rcfile=.pylintrc
+          pylint cli common config data model repository service *.py --rcfile=.pylintrc
+
