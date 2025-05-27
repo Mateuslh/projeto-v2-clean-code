@@ -1,24 +1,23 @@
-from abc import ABC, abstractmethod
+class AbstractBuilder:
+    """
+    Builder genérico: cria a entidade, aplica setters fluentes
+    e executa a validação antes de devolver o objeto pronto.
+    """
+    def __init__(self, entity=None):
+        self.entity = entity or self._create_entity()
+        self._skip_validate = False
 
-
-class AbstractBuilder(ABC):
-    def __init__(self, from_entity=None):
-        self.skip_validate = False
-        self.entity = from_entity if from_entity else self.create_entity()
-
-    @abstractmethod
-    def create_entity(self):
-        pass
+    def _create_entity(self):
+        raise NotImplementedError
 
     def skip_validate_(self):
-        self.skip_validate = True
+        self._skip_validate = True
         return self
 
     def build(self):
-        if not self.skip_validate:
+        if not self._skip_validate:
             self.validate()
         return self.entity
 
-    @abstractmethod
     def validate(self):
         pass
